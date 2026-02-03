@@ -9,32 +9,50 @@ import java.util.List;
 public class StudentService {
 
     @Autowired
-    StudentRepo studentRepo;
+    StudentRepository studentRepository;
     public Student getStudentById(int id){
-        return studentRepo.getStudentById(id);
+        return studentRepository.findById(id).orElse(null);
     }
 
     public String addStudent(Student student) {
-        return studentRepo.addStudent(student);
+        if (studentRepository.existsById(student.getId())) {
+            return "Student Already Added";
+        }
+        studentRepository.save(student);
+        return "new Student Added";
     }
 
     public Student getStudentByPathVar(int id) {
-        return studentRepo.getStudentByPathVar(id);
+        return studentRepository.findById(id).orElse(null);
     }
 
     public String updateAgeByPathVar(int id, int age) {
-        return studentRepo.updateAgeByPathVar(id,age);
+        return updateAge(id, age);
     }
 
     public String updateAgeByRequestParam(int id, int age) {
-        return studentRepo.updateAgeByRequestParam(id,age);
+        return updateAge(id, age);
     }
 
     public List<Student> getAllStudents() {
-        return studentRepo.getAllStudents();
+        return studentRepository.findAll();
     }
 
     public String deleteStudent(int id) {
-        return studentRepo.deleteStudent(id);
+        if (!studentRepository.existsById(id)) {
+            return "Invalid Id";
+        }
+        studentRepository.deleteById(id);
+        return "Delete Student Successfully";
+    }
+
+    private String updateAge(int id, int age) {
+        return studentRepository.findById(id)
+                .map(existingStudent -> {
+                    existingStudent.setAge(age);
+                    studentRepository.save(existingStudent);
+                    return "Age Updated Successfully";
+                })
+                .orElse("Invalid Id");
     }
 }
